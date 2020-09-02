@@ -47,7 +47,7 @@ def getBibCountryRow(i):
     bibRow = []
     if 'tags' in i['data']:
         print(len(i['data']['tags']))
-        if len(i['data']['tags']) > 0 : # check that the tags list ins't empty
+        if len(i['data']['tags']) > 0 : # check that the tags list isn't empty
             for t in i['data']['tags']: # loop attaching tags to countries
                 if t['tag'] in countries:
                     c = t['tag'] # set country for one or more rows
@@ -93,14 +93,14 @@ st.title('Historiography on refugees to East-Central Europe')
 #st.write(len(items))
 st.text(f"Items total: {len(items)}")
 
-if st.sidebar.checkbox("Show boxplot chart", 1):
-    st.subheader('Boxplot chart')
-    bibdf['publication_year'] = pd.to_numeric(bibdf['publication_year'])
-    bibc = bibdf[bibdf['country'].isin(countries)]
-    bibc.boxplot(column='publication_year', by='country')
-    st.pyplot()
+#if st.sidebar.checkbox("Show boxplot chart", 1):
+#    st.subheader('Boxplot chart')
+#    bibdf['publication_year'] = pd.to_numeric(bibdf['publication_year'])
+#    bibc = bibdf[bibdf['country'].isin(countries)]
+#    bibc.boxplot(column='publication_year', by='country')
+#    st.pyplot()
 
-if st.sidebar.checkbox("Show scatter chart"):
+if st.sidebar.checkbox("Show scatter chart", 1):
     st.subheader('Scatter chart')
     bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
     st.pyplot()
