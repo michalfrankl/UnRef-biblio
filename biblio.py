@@ -85,40 +85,45 @@ for i in items:
 bibdf = pd.DataFrame(np.array(d), columns=['zotero_key', 'publication_year', 'country', 'tag']) 
 
 # -----------------------------------------------------------
-# DISPLAY CHARTS
+# DISPLAY DATA AND CHARTS
+
+section = st.sidebar.selectbox('Sections', ('General', 'Country comparison'))
 
 st.title('Historiography on refugees to East-Central Europe')
 #st.write(len(items))
 
-st.text(f"Items total: {len(items)}")
+if (section == 'General'):
+    st.text(f"Items total: {len(items)}")
+    
+    # stat per country
+    if st.sidebar.checkbox("Show records per country", 1):
+        cstat = bibdf.groupby("country").zotero_key.nunique()
+        st.subheader("Records per country")
+        st.table(cstat)
+    
+    # stat per tag
+    if st.sidebar.checkbox("Show records per tag", 1):
+        tstat = bibdf.groupby("tag").zotero_key.nunique()
+        st.subheader("Records per tag")
+        st.table(tstat)
 
-# stat per country
-if st.sidebar.checkbox("Show records per country", 1):
-    cstat = bibdf.groupby("country").zotero_key.nunique()
-    st.subheader("Records per country")
-    st.write(cstat)
+if (section == 'Country comparison'):
 
-# stat per tag
-if st.sidebar.checkbox("Show records per tag", 1):
-    tstat = bibdf.groupby("tag").zotero_key.nunique()
-    st.subheader("Records per tag")
-    st.write(tstat)
-
-# country, tags
-if st.sidebar.checkbox("Show records per country, tag", 1):
-    ctags = bibdf.groupby(['country','tag']).zotero_key.nunique()
-    st.subheader("Records per country, tag")
-    st.write(ctags)
-
-#if st.sidebar.checkbox("Show boxplot chart", 1):
-#    st.subheader('Boxplot chart')
-#    bibdf['publication_year'] = pd.to_numeric(bibdf['publication_year'])
-#    bibc = bibdf[bibdf['country'].isin(countries)]
-#    bibc.boxplot(column='publication_year', by='country')
-#    st.pyplot()
-
-countries = st.sidebar.multiselect("Select countries", countries, countries)
-if st.sidebar.checkbox("Show scatter chart", 1):
-    st.subheader('Scatter chart')
-    bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
-    st.pyplot()
+    # country, tags
+    if st.sidebar.checkbox("Show records per country, tag", 1):
+        ctags = bibdf.groupby(['country','tag']).zotero_key.nunique()
+        st.subheader("Records per country, tag")
+        st.write(ctags)
+    
+    #if st.sidebar.checkbox("Show boxplot chart", 1):
+    #    st.subheader('Boxplot chart')
+    #    bibdf['publication_year'] = pd.to_numeric(bibdf['publication_year'])
+    #    bibc = bibdf[bibdf['country'].isin(countries)]
+    #    bibc.boxplot(column='publication_year', by='country')
+    #    st.pyplot()
+    
+    countries = st.sidebar.multiselect("Select countries", countries, countries)
+    if st.sidebar.checkbox("Show scatter chart", 1):
+        st.subheader('Scatter chart')
+        bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
+        st.pyplot()
