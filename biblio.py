@@ -91,7 +91,18 @@ countries = st.sidebar.multiselect("Select countries", countries, countries)
 
 st.title('Historiography on refugees to East-Central Europe')
 #st.write(len(items))
+
 st.text(f"Items total: {len(items)}")
+
+# stat per country
+cstat = bibdf.groupby("country").zotero_key.nunique()
+st.subheader("Records per country")
+st.write(cstat)
+
+# country, tags
+ctags = bibdf.groupby(['country','tag']).zotero_key.nunique()
+st.subheader("Records per country, tag")
+st.write(ctags)
 
 #if st.sidebar.checkbox("Show boxplot chart", 1):
 #    st.subheader('Boxplot chart')
