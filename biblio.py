@@ -128,12 +128,13 @@ if (section == 'Country comparison'):
     
     countries = st.sidebar.multiselect("Select countries", countries, countries)
     if st.sidebar.checkbox("Show scatter chart", 1):
-        st.subheader('Scatter chart')
+        #st.subheader('Scatter chart')
         bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
         st.pyplot()
         
     for c in countries:
         cbib = bibdf[(bibdf.country == c)].value_counts(subset=['publication_year'], sort=False).reset_index()
         cbib.columns = ['Publication year', 'Number per year']
+        st.subheader(c)
         c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', size='Number per year', color='Number per year')
         st.altair_chart(c, use_container_width=True)
