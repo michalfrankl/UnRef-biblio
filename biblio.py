@@ -12,6 +12,7 @@ import numpy as np
 from pyzotero import zotero
 from matplotlib import pyplot as plt
 import zotero_config as zc
+import altair as alt
 
 # -------------------------------------------------------------
 # FUNCTIONS
@@ -132,5 +133,7 @@ if (section == 'Country comparison'):
         st.pyplot()
         
     for c in countries:
-        cbib = bibdf[(bibdf.country == c)].value_counts(subset=['publication_year'], sort=False).plot(kind="bar", title=c);
-        st.pyplot()
+        cbib = bibdf[(bibdf.country == c)].value_counts(subset=['publication_year'], sort=False).reset_index()
+        cbib.columns = ['Publication year', 'Number per year']
+        c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', size='Number per year', color='Number per year')
+        st.altair_chart(c, use_container_width=True)
