@@ -90,22 +90,25 @@ bibdf = pd.DataFrame(np.array(d), columns=['zotero_key', 'publication_year', 'co
 section = st.sidebar.selectbox('Sections', ('General', 'Country comparison'))
 
 st.title('Historiography on refugees to East-Central Europe')
-#st.write(len(items))
 
 if (section == 'General'):
     st.text(f"Items total: {len(items)}")
     
     # stat per country
     if st.sidebar.checkbox("Show records per country", 1):
-        cstat = bibdf.groupby("country").zotero_key.nunique()
+        #cstat = bibdf.groupby("country").zotero_key.nunique()
+        cstat = bibdf.value_counts(subset=['country'])
         st.subheader("Records per country")
-        st.table(cstat)
+        st.write(cstat)
     
     # stat per tag
     if st.sidebar.checkbox("Show records per tag", 1):
-        tstat = bibdf.groupby("tag").zotero_key.nunique()
+        #tstat = bibdf.groupby("tag").zotero_key.nunique()
+        tstat = bibdf.value_counts(subset=['tag'])
+        #tstat.columns = ['tag', 'count']
         st.subheader("Records per tag")
-        st.table(tstat)
+        #st.table(tstat)
+        st.write(tstat)
 
 if (section == 'Country comparison'):
 
@@ -126,4 +129,8 @@ if (section == 'Country comparison'):
     if st.sidebar.checkbox("Show scatter chart", 1):
         st.subheader('Scatter chart')
         bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
+        st.pyplot()
+        
+    for c in countries:
+        cbib = bibdf[(bibdf.country == c)].value_counts(subset=['publication_year'], sort=False).plot(kind="bar", title=c);
         st.pyplot()
