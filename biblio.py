@@ -88,36 +88,33 @@ bibdf = pd.DataFrame(np.array(d), columns=['zotero_key', 'publication_year', 'co
 # -----------------------------------------------------------
 # DISPLAY DATA AND CHARTS
 
-section = st.sidebar.selectbox('Sections', ('General', 'Country comparison'))
+st.sidebar.title('Historiography on refugees to East-Central Europe')
+st.sidebar.text(f"Items total: {len(items)}")
 
-st.title('Historiography on refugees to East-Central Europe')
+section = st.sidebar.selectbox('Sections', ('General', 'Country comparison', 'Tags'))
 
-if (section == 'General'):
-    st.text(f"Items total: {len(items)}")
+if (section == 'General'): 
     
     # stat per country
     if st.sidebar.checkbox("Show records per country", 1):
-        #cstat = bibdf.groupby("country").zotero_key.nunique()
         cstat = bibdf.value_counts(subset=['country'])
+        cstat = cstat.reset_index()
+        cstat.columns = ['Country', 'Number of records']
         st.subheader("Records per country")
         st.write(cstat)
+        
+        c = alt.Chart(cstat).mark_bar().encode(x='Country', y='Number of records', size='Number of records', color='Number of records')
+        st.altair_chart(c, use_container_width=True)
     
     # stat per tag
     if st.sidebar.checkbox("Show records per tag", 1):
-        #tstat = bibdf.groupby("tag").zotero_key.nunique()
         tstat = bibdf.value_counts(subset=['tag'])
-        #tstat.columns = ['tag', 'count']
+        tstat = tstat.reset_index()
+        tstat.columns = ['Tag', 'Number of records']
         st.subheader("Records per tag")
-        #st.table(tstat)
         st.write(tstat)
 
 if (section == 'Country comparison'):
-
-    # country, tags
-    if st.sidebar.checkbox("Show records per country, tag", 1):
-        ctags = bibdf.groupby(['country','tag']).zotero_key.nunique()
-        st.subheader("Records per country, tag")
-        st.write(ctags)
     
     #if st.sidebar.checkbox("Show boxplot chart", 1):
     #    st.subheader('Boxplot chart')
@@ -127,10 +124,6 @@ if (section == 'Country comparison'):
     #    st.pyplot()
     
     countries = st.sidebar.multiselect("Select countries", countries, countries)
-    if st.sidebar.checkbox("Show scatter chart", 1):
-        #st.subheader('Scatter chart')
-        bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
-        st.pyplot()
         
     for c in countries:
         cbib = bibdf[(bibdf.country == c)].value_counts(subset=['publication_year'], sort=False).reset_index()
@@ -138,3 +131,19 @@ if (section == 'Country comparison'):
         st.subheader(c)
         c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', size='Number per year', color='Number per year')
         st.altair_chart(c, use_container_width=True)
+        
+    if st.sidebar.checkbox("Show scatter chart", 1):
+        #st.subheader('Scatter chart')
+        bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
+        st.pyplot()
+    
+        
+if (section == 'Tags'):
+
+    # country, tags
+    if st.sidebar.checkbox("Show records per country, tag", 1):
+        ctags = bibdf.groupby(['country','tag']).zotero_key.nunique()
+        ctags = ctags.reset_index()
+        ctags.columns = ['Country', 'Tag', 'Number of records']
+        st.subheader("Records per country, tag")
+        st.write(ctags)
