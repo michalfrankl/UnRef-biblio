@@ -42,20 +42,33 @@ def getBibYear(i):
     if 'parsedDate' in i['meta']:
         y = i['meta']['parsedDate'][0:4]
         return y
-
-
-def getItemsTags(items):
-    itags = []
-    for i in items:
-        if len(i['data']['tags']) > 0 :
-            #itemtags = []
-            for tag in i['data']['tags']:
-                tagrow = []
-                tagrow.append(i['key'])
-                tagrow.append(getBibYear(i))
-                tagrow.append(tag['tag'])
-                itags.append(tagrow)
-    return(itags)
+    
+def getBibCountryRow(i):
+    found_countries = []
+    bibRow = []
+    if 'tags' in i['data']:
+        # print(len(i['data']['tags']))
+        if len(i['data']['tags']) > 0 : # check that the tags list isn't empty
+            for t in i['data']['tags']: # loop attaching tags to countries
+                if t['tag'] in countries:
+                    c = t['tag'] # set country for one or more rows
+                    found_countries.append(c)
+                    for tag in i['data']['tags']:
+                        if tag['tag'] not in countries:
+                            bibRow.append(i['key'])
+                            bibRow.append(getBibYear(i))
+                            bibRow.append(c)
+                            bibRow.append(tag['tag'])                            
+                            return(bibRow)
+                    del c
+            # fallback loop for cases with no countries
+            if not found_countries:
+                for tag in i['data']['tags']:
+                    bibRow.append(i['key'])
+                    bibRow.append(getBibYear(i))
+                    bibRow.append('Not defined')
+                    bibRow.append(tag['tag'])
+                    return(bibRow)
 
 # -------------------------------------------------------------
 # LOAD AND PREPARE DATA
@@ -63,17 +76,44 @@ def getItemsTags(items):
 # data_load_state = st.text('Loading data from UnRef Zotero...')
 items = fetch_zotero()
 # data_load_state.text("Done! (using st.cache)")
+# st.write(items)
 
 countries = ['Czechoslovakia', 'Poland', 'Austria', 'Hungary', 'Yugoslavia']
-itags = getItemsTags(items)
-print(len(itags))
-tagsdf = pd.DataFrame(np.array(itags), columns=['zotero_key', 'publication_year', 'tag']) 
+d = []
+for i in items:
+    if len(i['data']['tags']) > 0 :
+        dline = getBibCountryRow(i)
+        if dline != '':
+            d.append(getBibCountryRow(i))
 
-tagsmaster = pd.read_csv('UnRef_tags.csv')
-tagsm = pd.merge(tagsdf, tagsmaster, how='left', left_on='tag', right_on='Tag')
+#print(d)
+data = np.array(d, dtype="object")
+st.write(data)
 
+# convert to dict
+#dd = dict()
+# for dline in d:
+#	print(dline)
+#    dd['zotero_key'] = dline[0]
+#    dd['publication_year'] = dline[1]
+#    dd['country'] = dline[2]
+#    dd['tag'] = dline[3]
 
+#print(dd)
 
+st.write(d)
+
+#bibdf = pd.DataFrame([d]).T
+#bibdf.columns = ['zotero_key', 'publication_year', 'country', 'tag']
+
+#bibdf = pd.DataFrame.from_records(d, columns=['zotero_key', 'publication_year', 'country', 'tag'])
+
+#, columns=['zotero_key', 'publication_year', 'country', 'tag'] 
+
+# bibdf = pd.DataFrame(np.array(d), columns=['zotero_key', 'publication_year', 'country', 'tag'])
+bibdf = pd.DataFrame(d, columns=['zotero_key', 'publication_year', 'country', 'tag']) 
+st.write(bibdf)
+#
 # -----------------------------------------------------------
 # DISPLAY DATA AND CHARTS
 
@@ -86,14 +126,22 @@ if (section == 'General'):
     
     # stat per country
     if st.sidebar.checkbox("Show records per country", 1):
-        cstat = tagsm[tagsm.Category=='country of refuge'].value_counts(subset=['tag'])
+        cstat = bibdf.value_counts(subset=['country'])
         cstat = cstat.reset_index()
-        cstat.columns = ['Country of refuge', 'Number of records']
+        cstat.columns = ['Country', 'Number of records']
         st.subheader("Records per country")
         st.write(cstat)
         
-        c = alt.Chart(cstat).mark_bar().encode(x='Country of refuge', y='Number of records', size='Number of records', color='Number of records')
+        c = alt.Chart(cstat).mark_bar().encode(x='Country', y='Number of records', size='Number of records', color='Number of records')
         st.altair_chart(c, use_container_width=True)
+    
+    # stat per tag
+    if st.sidebar.checkbox("Show records per tag", 1):
+        tstat = bibdf.value_counts(subset=['tag'])
+        tstat = tstat.reset_index()
+        tstat.columns = ['Tag', 'Number of records']
+        st.subheader("Records per tag")
+        st.write(tstat)
 
 if (section == 'Country comparison'):
     
@@ -107,7 +155,7 @@ if (section == 'Country comparison'):
     countries = st.sidebar.multiselect("Select countries", countries, countries)
         
     for c in countries:
-        cbib = tagsm[(tagsm.tag == c) & (tagsm.Category == 'country of refuge')].value_counts(subset=['publication_year'], sort=False).reset_index()
+        cbib = bibdf[(bibdf.country == c)].value_counts(subset=['publication_year'], sort=False).reset_index()
         cbib.columns = ['Publication year', 'Number per year']
         st.subheader(c)
         c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', size='Number per year', color='Number per year')
@@ -117,24 +165,23 @@ if (section == 'Country comparison'):
 #        #st.subheader('Scatter chart')
 #        bibdf[bibdf['country'].isin(countries)].plot(kind="scatter", y="publication_year", x="country", title="Refugee bibliography per country (scatter)")
 #        st.pyplot()
-
+    
         
 if (section == 'Tags'):
-    
-    # stat per tag
-    if st.sidebar.checkbox("Show records per tag", 1):
-        categories = ['country of refuge', 'event', 'organization', 'keyword', 'location', 'personality', 'refugee group (by ethnicity)', 'refugee group (by reason of refuge)', 'refugee group (by region/country of origin)', 'refugee group (type)', 'state actor involved']
-        cat = st.sidebar.multiselect("Select tag categories", categories, categories)
-        tstat = tagsm[tagsm['Category'].isin(cat)].value_counts(subset=['tag'])
-        tstat = tstat.reset_index()
-        tstat.columns = ['Tag', 'Number of records']
-        st.subheader("Records per tag")
-        st.write(tstat)
+
+    # country, tags
+    if st.sidebar.checkbox("Show records per country, tag", 1):
+        ctags = bibdf.groupby(['country','tag']).zotero_key.nunique()
+        ctags = ctags.reset_index()
+        ctags.columns = ['Country', 'Tag', 'Number of records']
+        st.subheader("Records per country, tag")
+        st.write(ctags)
         
     # items with no tags
-    if st.sidebar.checkbox("Show records without tags", 0):
+    if st.sidebar.checkbox("Show records without tags", 1):
         st.subheader("Records without tags")
         for i2 in items:
             if len(i2['data']['tags']) == 0:
+                print(i2)
                 st.write("[" + i2['data']['title'] + "](https://www.zotero.org/groups/2363703/unlikely_refuge/collections/3UXBKWPF/items/" + i2['data']['key'] + "/collection)")
    	
