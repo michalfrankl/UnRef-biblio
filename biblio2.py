@@ -65,8 +65,10 @@ items = fetch_zotero()
 # data_load_state.text("Done! (using st.cache)")
 
 countries = ['Czechoslovakia', 'Poland', 'Austria', 'Hungary', 'Yugoslavia']
+categories = ['country of refuge', 'event', 'organization', 'keyword', 'location', 'personality', 'refugee group (by ethnicity)', 'refugee group (by reason of refuge)', 'refugee group (by region/country of origin)', 'refugee group (type)', 'state actor involved']
+
 itags = getItemsTags(items)
-print(len(itags))
+# print(len(itags))
 tagsdf = pd.DataFrame(np.array(itags), columns=['zotero_key', 'publication_year', 'tag']) 
 
 tagsmaster = pd.read_csv('UnRef_tags.csv')
@@ -80,7 +82,7 @@ tagsm = pd.merge(tagsdf, tagsmaster, how='left', left_on='tag', right_on='Tag')
 st.sidebar.title('Historiography on refugees to East-Central Europe')
 st.sidebar.text(f"Items total: {len(items)}")
 
-section = st.sidebar.selectbox('Sections', ('General', 'Country comparison', 'Tags'))
+section = st.sidebar.selectbox('Sections', ('General', 'Country comparison', 'Tags', 'Comparison'))
 
 if (section == 'General'): 
     
@@ -123,7 +125,6 @@ if (section == 'Tags'):
     
     # stat per tag
     if st.sidebar.checkbox("Show records per tag", 1):
-        categories = ['country of refuge', 'event', 'organization', 'keyword', 'location', 'personality', 'refugee group (by ethnicity)', 'refugee group (by reason of refuge)', 'refugee group (by region/country of origin)', 'refugee group (type)', 'state actor involved']
         cat = st.sidebar.multiselect("Select tag categories", categories, categories)
         tstat = tagsm[tagsm['Category'].isin(cat)].value_counts(subset=['tag'])
         tstat = tstat.reset_index()
@@ -138,3 +139,19 @@ if (section == 'Tags'):
             if len(i2['data']['tags']) == 0:
                 st.write("[" + i2['data']['title'] + "](https://www.zotero.org/groups/2363703/unlikely_refuge/collections/3UXBKWPF/items/" + i2['data']['key'] + "/collection)")
    	
+if (section == 'Comparison'):
+    comp1 = st.sidebar.selectbox("Select first category", categories)
+    comp2 = st.sidebar.selectbox("Select second category", categories)
+    
+    if comp1 != comp2:
+        st.subheader("Comparison of tag categories")
+        # compare two categories
+        tagsc = tagsm[tagsm.Category==comp1]
+        tagsk = tagsm[tagsm.Category==comp2]
+
+        comp = pd.merge(tagsc, tagsk, how='outer', on='zotero_key')
+
+        stat = comp.value_counts(subset=['Tag_x', 'Tag_y'])
+        stat = stat.reset_index()
+        stat.columns = [comp1, comp2, 'Number of records']
+        st.write(stat)
