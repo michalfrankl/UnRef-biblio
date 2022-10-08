@@ -3,3 +3,5 @@ pandas
 matplotlib
 scikit_learn
 pyzotero
+wordcloud
+multidict

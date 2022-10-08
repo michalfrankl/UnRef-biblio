@@ -11,8 +11,9 @@ import pandas as pd
 import numpy as np
 from pyzotero import zotero
 from matplotlib import pyplot as plt
-# import zotero_config as zc
 import altair as alt
+import wordcloud
+import multidict
 
 # -------------------------------------------------------------
 # FUNCTIONS
@@ -134,6 +135,16 @@ if (section == 'Tags'):
         tstat.columns = ['Tag', 'Number of records']
         st.subheader("Records per tag")
         st.write(tstat)
+        
+    # WordCloud
+    tagwords = multidict.MultiDict()
+    for i in range(len(tstat)):
+        tagwords.add(tstat.loc[i, "Tag"], tstat.loc[i, "Number of records"])
+    wcloud = wordcloud.WordCloud(collocations=False).generate_from_frequencies(tagwords)
+    
+    plt.imshow(wcloud, interpolation="bilinear")
+    plt.axis("off")
+    st.pyplot(plt)
         
     # items with no tags
     if st.sidebar.checkbox("Show records without tags", 0):
