@@ -21,7 +21,7 @@ zotid = st.secrets["zotid"]
 zottype = st.secrets["zottype"]
 zotkey = st.secrets["zotkey"]
 
-@st.cache
+@st.cache(ttl=3600)
 def fetch_zotero():
     # Zotero UnRef bibliography
     zot = zotero.Zotero(zotid, zottype, zotkey)
@@ -95,7 +95,8 @@ if (section == 'General'):
 	st.subheader("Records per country")
 	st.write(cstat)
 	
-	c = alt.Chart(cstat).mark_bar().encode(x='Country of refuge', y='Number of records', size='Number of records', color='Number of records')
+	# c = alt.Chart(cstat).mark_bar().encode(x='Country of refuge', y='Number of records', size='Number of records', color='Number of records')
+	c = alt.Chart(cstat).mark_bar().encode(x='Country of refuge', y='Number of records', color='Number of records')
 	st.altair_chart(c, use_container_width=True)
 
 if (section == 'Country comparison'):
@@ -113,7 +114,8 @@ if (section == 'Country comparison'):
         cbib = tagsm[(tagsm.tag == c) & (tagsm.Category == 'country of refuge')].value_counts(subset=['publication_year'], sort=False).reset_index()
         cbib.columns = ['Publication year', 'Number per year']
         st.subheader(c)
-        c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', size='Number per year', color='Number per year')
+        # c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', size='Number per year', color='Number per year')
+        c = alt.Chart(cbib).mark_bar().encode(x='Publication year', y='Number per year', color='Number per year')
         st.altair_chart(c, use_container_width=True)
         
 #    if st.sidebar.checkbox("Show scatter chart", 1):
