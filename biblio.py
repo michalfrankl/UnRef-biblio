@@ -66,7 +66,7 @@ def getItemsTags(items):
                     
 data_load_state = st.text('Loading data from UnRef Zotero...')
 items = fetch_zotero()
-data_load_state.text("Done! (using st.cache)")
+# data_load_state.text("Done! (using st.cache)")
 
 countries = ['Czechoslovakia', 'Poland', 'Austria', 'Hungary', 'Yugoslavia']
 categories = ['country of refuge', 'event', 'organization', 'keyword', 'location', 'personality', 'refugee group (by ethnicity)', 'refugee group (by reason of refuge)', 'refugee group (by region/country of origin)', 'refugee group (type)', 'state actor involved']
