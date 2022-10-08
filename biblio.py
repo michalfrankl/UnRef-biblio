@@ -11,16 +11,20 @@ import pandas as pd
 import numpy as np
 from pyzotero import zotero
 from matplotlib import pyplot as plt
-import zotero_config as zc
+# import zotero_config as zc
 import altair as alt
 
 # -------------------------------------------------------------
 # FUNCTIONS
 
+zotid = st.secrets["zotid"]
+zottype = st.secrets["zottype"]
+zotkey = st.secrets["zotkey"]
+
 @st.cache
 def fetch_zotero():
     # Zotero UnRef bibliography
-    zot = zotero.Zotero(zc.zotid, zc.zottype, zc.zotkey)
+    zot = zotero.Zotero(zotid, zottype, zotkey)
     
     zot.add_parameters(itemType='journalArticle || bookSection || book || thesis || webpage || blogPost || film || magazineArticle || document', sort='date', direction='asc')
     
@@ -60,21 +64,18 @@ def getItemsTags(items):
 # -------------------------------------------------------------
 # LOAD AND PREPARE DATA
                     
-# data_load_state = st.text('Loading data from UnRef Zotero...')
+data_load_state = st.text('Loading data from UnRef Zotero...')
 items = fetch_zotero()
-# data_load_state.text("Done! (using st.cache)")
+data_load_state.text("Done! (using st.cache)")
 
 countries = ['Czechoslovakia', 'Poland', 'Austria', 'Hungary', 'Yugoslavia']
 categories = ['country of refuge', 'event', 'organization', 'keyword', 'location', 'personality', 'refugee group (by ethnicity)', 'refugee group (by reason of refuge)', 'refugee group (by region/country of origin)', 'refugee group (type)', 'state actor involved']
 
 itags = getItemsTags(items)
-# print(len(itags))
 tagsdf = pd.DataFrame(np.array(itags), columns=['zotero_key', 'publication_year', 'tag']) 
 
 tagsmaster = pd.read_csv('UnRef_tags.csv')
 tagsm = pd.merge(tagsdf, tagsmaster, how='left', left_on='tag', right_on='Tag')
-
-
 
 # -----------------------------------------------------------
 # DISPLAY DATA AND CHARTS
@@ -87,15 +88,15 @@ section = st.sidebar.selectbox('Sections', ('General', 'Country comparison', 'Ta
 if (section == 'General'): 
     
     # stat per country
-    if st.sidebar.checkbox("Show records per country", 1):
-        cstat = tagsm[tagsm.Category=='country of refuge'].value_counts(subset=['tag'])
-        cstat = cstat.reset_index()
-        cstat.columns = ['Country of refuge', 'Number of records']
-        st.subheader("Records per country")
-        st.write(cstat)
-        
-        c = alt.Chart(cstat).mark_bar().encode(x='Country of refuge', y='Number of records', size='Number of records', color='Number of records')
-        st.altair_chart(c, use_container_width=True)
+    #if st.sidebar.checkbox("Show records per country", 1):
+	cstat = tagsm[tagsm.Category=='country of refuge'].value_counts(subset=['tag'])
+	cstat = cstat.reset_index()
+	cstat.columns = ['Country of refuge', 'Number of records']
+	st.subheader("Records per country")
+	st.write(cstat)
+	
+	c = alt.Chart(cstat).mark_bar().encode(x='Country of refuge', y='Number of records', size='Number of records', color='Number of records')
+	st.altair_chart(c, use_container_width=True)
 
 if (section == 'Country comparison'):
     
