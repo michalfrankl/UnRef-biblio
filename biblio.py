@@ -140,7 +140,7 @@ if (section == 'Tags'):
     tagwords = multidict.MultiDict()
     for i in range(len(tstat)):
         tagwords.add(tstat.loc[i, "Tag"], tstat.loc[i, "Number of records"])
-    wcloud = wordcloud.WordCloud(collocations=False).generate_from_frequencies(tagwords)
+    wcloud = wordcloud.WordCloud(collocations=False, background_color="white", width=600, height=600).generate_from_frequencies(tagwords)
     
     plt.imshow(wcloud, interpolation="bilinear")
     plt.axis("off")
