@@ -1,5 +1,7 @@
 #MF
-#zotero_config.py
+zotero_config.py
+.streamlit/secrets.toml
+.streamlit
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

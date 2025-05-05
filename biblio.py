@@ -22,7 +22,7 @@ zotid = st.secrets["zotid"]
 zottype = st.secrets["zottype"]
 zotkey = st.secrets["zotkey"]
 
-@st.cache(ttl=3600)
+@st.cache_data(ttl=3600)
 def fetch_zotero():
     # Zotero UnRef bibliography
     zot = zotero.Zotero(zotid, zottype, zotkey)
